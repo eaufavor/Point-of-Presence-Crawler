@@ -221,11 +221,11 @@ if __name__ == '__main__':
                     description='Point of Presence Crawler')
     parser.add_argument('-n', '--name', default='google',
                         help='the CDN to crawl, options are %s'%CDNNames)
-    parser.add_argument('-d', '--delay', type=int, default=0.1,\
+    parser.add_argument('-d', '--delay', type=float, default=0.1,\
                         help='Seconds to sleep between normal DNS queries')
-    parser.add_argument('-c', '--cooldown', type=int, default=90,\
+    parser.add_argument('-c', '--cooldown', type=float, default=90,\
                         help='Seconds to sleep when DNS deny to respond')
-    parser.add_argument('-t', '--timeout', type=int, default=0.5,\
+    parser.add_argument('-t', '--timeout', type=float, default=0.5,\
                         help='timeout(in seconds) to wait for a DNS response')
     parser.add_argument('-s', '--start', default='1.0.0.0',
                         help='the IP address to start if now.db is not present')
