@@ -153,25 +153,25 @@ def main():
             continue
 
         # only use A record here because it seems enough
-        server = None
+        servers = {}
         for ans in r.answer:
-            # TODO: loop over all A records
             if ans.to_rdataset().rdtype == dns.rdatatype.A:
                 # use /24 prefix to represent
                 # all the servers in the same location
                 server = networkMask(ans[0].to_text(), 24)
-                break
+                servers[server] = 1
 
         # if ENDS0 is used, get the suggested mask.
         for options in r.options:
             if isinstance(options, clientsubnetoption.ClientSubnetOption):
                 suggested_mask = int(options.scope)
 
-        if server:
-            clients = pool.get(server, [])
-            clients.append((IP, suggested_mask))
-            pool[server] = clients
-            isFailed = False
+        if len(servers) > 0:
+            for server in servers:
+                clients = pool.get(server, [])
+                clients.append((IP, suggested_mask))
+                pool[server] = clients
+                isFailed = False
         else:
             failed += 1
             print  r.answer
@@ -203,7 +203,8 @@ def main():
             a.join()
         if isFailed:
             # might need to slow down because we sent too many requests
-            time.sleep(20)
+            # rule of thumb: 90 seconds should be enough
+            time.sleep(90)
         else:
             time.sleep(0)
 

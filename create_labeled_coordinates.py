@@ -80,7 +80,7 @@ def findCenter(seen):
 CACHE_FILE = os.path.abspath(r"./mapping.db")
 
 def main():
-    READER = geoip2.database.Reader('.geoip/GeoLite2-City.mmdb')
+    READER = geoip2.database.Reader('./geoip/GeoLite2-City.mmdb')
     print "server,cities,names,lat,lon"
     with open(CACHE_FILE, 'rb') as f:
         pool = pickle.load(f)
