@@ -1,5 +1,4 @@
-# point-of-presence-digger
-Find and locate points of presence of CDNs
-
+# Point of Presence Crawler
+Find and locate points of presence of Internet service providers such as CDNs.
 
 [Demo](https://eaufavor.net/map.html)
