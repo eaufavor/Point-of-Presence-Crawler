@@ -5,6 +5,7 @@ import socket
 import os
 import pickle
 import time
+import argparse
 from threading import Thread
 import dns
 import clientsubnetoption
@@ -29,6 +30,9 @@ CDN = {\
         'cloudfront': 'dl47xs20witg8.cloudfront.net',
         'maxCDN': 'gp1.wac.v2cdn.net'
       }
+CDNNames = ""
+for name in CDN:
+    CDNNames += name + ' '
 
 
 def networkMask(ip, bits):
@@ -98,8 +102,10 @@ def save_states(pool, now):
 
 
 
-def main():
-    IP_binary = 1 << 24 # start from 1.0.0.0
+def main(arguments):
+
+    # default: start from 1.0.0.0
+    IP_binary = struct.unpack('!L', socket.inet_aton(arguments.start))[0]
     step = 24 # /24 is the minium step
 
     mask = step
@@ -139,13 +145,14 @@ def main():
             continue
         # creat the query message
         cso = clientsubnetoption.ClientSubnetOption(IP, bits=mask)
-        # may change 'google' to other CDNs
-        message = dns.message.make_query(CDN['google'], 'A')
+        # default: 'google'
+        message = dns.message.make_query(CDN[arguments.name], 'A')
         message.use_edns(options=[cso])
         try:
             # rotating the DNS server we use
-            r = dns.query.udp(message,\
-                    DNS_servers[count%len(DNS_servers)], timeout=0.5)
+            r = dns.query.udp(message,
+                              DNS_servers[count%len(DNS_servers)],
+                              timeout=arguments.timeout)
         except dns.exception.Timeout:
             timeout += 1
             print 'timeout:', DNS_servers[count%len(DNS_servers)], IP
@@ -204,9 +211,25 @@ def main():
         if isFailed:
             # might need to slow down because we sent too many requests
             # rule of thumb: 90 seconds should be enough
-            time.sleep(90)
+            time.sleep(arguments.cooldown)
         else:
-            time.sleep(0)
+            time.sleep(arguments.delay)
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(\
+                    formatter_class=argparse.ArgumentDefaultsHelpFormatter,\
+                    description='Point of Presence Crawler')
+    parser.add_argument('-n', '--name', default='google',
+                        help='the CDN to crawl, options are %s'%CDNNames)
+    parser.add_argument('-d', '--delay', type=int, default=0.1,\
+                        help='Seconds to sleep between normal DNS queries')
+    parser.add_argument('-c', '--cooldown', type=int, default=90,\
+                        help='Seconds to sleep when DNS deny to respond')
+    parser.add_argument('-t', '--timeout', type=int, default=0.5,\
+                        help='timeout(in seconds) to wait for a DNS response')
+    parser.add_argument('-s', '--start', default='1.0.0.0',
+                        help='the IP address to start if now.db is not present')
+    parser.add_argument('-q', '--quiet', action='store_true', default=False,\
+                        help='only print errors (not implemented yet)')
+    args = parser.parse_args()
+    main(args)
