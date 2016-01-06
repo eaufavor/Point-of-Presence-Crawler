@@ -1,0 +1,72 @@
+<head>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+<!-- Plotly chart will be drawn inside this DIV -->
+<div id="myDiv", style="width: 100%; height: 800px; border: none;"></div>
+<script>
+/* JAVASCRIPT CODE GOES HERE */
+Plotly.d3.csv('labeled_coordinates/google.csv.example', function(err, rows){
+      function unpack(rows, key) {
+          return rows.map(function(row) { return row[key]; });
+      }
+var server = unpack(rows, 'server'),
+    cities = unpack(rows, 'cities'),
+    names = unpack(rows, 'names'),
+    cityLat = unpack(rows, 'lat'),
+    cityLon = unpack(rows, 'lon'),
+    color = [,"rgb(255,65,54)","rgb(133,20,75)","rgb(255,133,27)","lightgrey"],
+    citySize = [],
+    hoverText = [],
+    scale = 50;
+
+for ( var i = 0 ; i < cities.length; i++) {
+  citySize.push(Math.log(cities[i])+3);
+  hoverText.push(names[i]);
+}
+
+  var data = [{
+   type: 'scattergeo',
+   //locationmode: 'USA-states',
+   lat: cityLat,
+   lon: cityLon,
+   text: hoverText,
+   hoverinfo: 'text',
+   marker: {
+     size: citySize,
+     line: {
+       color: 'black',
+       width: 2
+     },
+
+   }
+}];
+
+var layout = {
+    title: 'Google POPs',
+    showlegend: false,
+    geo: {
+      //scope: 'north america',
+      projection: {
+        type: 'robinson'
+      },
+      width: 800,
+      height: 1280,
+      resolution: 100,
+      showframe: true,
+      showland: true,
+      landcolor: 'rgb(217, 217, 217)',
+      showlakes: true,
+      lakecolor: 'rgb(255, 255, 255)',
+      subunitwidth: 10,
+      countrywidth: 10,
+      subunitcolor: 'rgb(1,1,1)',
+      countrycolor: 'rgb(1,1,1)'
+    },
+};
+
+Plotly.plot(myDiv, data, layout, {showLink: false});
+  });
+</script>
+</body>
